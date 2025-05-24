@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Uploads folder (photos)
+uploads/
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# WebStorm
+.idea/
+*.iml
+out/
