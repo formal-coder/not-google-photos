@@ -1,9 +1,9 @@
-const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
-const logger = require('../utils/logger');
 const path = require('path');
+const fs = require('fs');
 const { loadMetadata, saveMetadata } = require('../utils/metadata');
+const { createThumbnail } = require('../utils/thumbnail');
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, '../uploads');
@@ -15,8 +15,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-const { createThumbnail } = require('../utils/thumbnail');
-router.post('/', upload.single('photo'), async (req, res) => {
+router.post('/', upload.single('photo'), (req, res) => {
     const metadata = loadMetadata();
     const filename = req.file.originalname;
 
@@ -28,7 +27,9 @@ router.post('/', upload.single('photo'), async (req, res) => {
     saveMetadata(metadata);
     res.send('Upload successful');
 
-    createThumbnail(filename).catch(err => logger.error(`Thumbnail error: ${err.message}`));
+    createThumbnail(filename).catch((err) =>
+        console.error('Thumbnail creation failed:', err)
+    );
 });
 
 module.exports = router;
