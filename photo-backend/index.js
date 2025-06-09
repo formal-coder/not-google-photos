@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const uploadRoute = require('./routes/upload');
 const listRoute = require('./routes/list');
 const downloadRoute = require('./routes/download');
@@ -7,6 +8,8 @@ const deleteRoute = require('./routes/delete');
 const viewRoute = require('./routes/view');
 
 const app = express();
+app.use(cors());
+
 app.use('/upload', uploadRoute);
 app.use('/list', listRoute);
 app.use('/download', downloadRoute);
