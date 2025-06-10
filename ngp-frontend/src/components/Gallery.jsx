@@ -5,7 +5,7 @@ import UploadModal from './UploadModal';
 import ConfirmationModal from './ConfirmationModal';
 import Tooltip from './Tooltip';
 import { api } from '../js_utilities/APIManager';
-import { Plus, Trash2, Sun, Moon, Search } from 'lucide-react';
+import {Plus, Trash2, Sun, Moon, Search, Camera} from 'lucide-react';
 
 // --- App Component ---
 
@@ -31,7 +31,6 @@ export default function Gallery() {
         } else {
             document.documentElement.classList.remove('dark');
         }
-        console.log('Theme changed to:', theme);
     }, [theme]);
 
     useEffect(() => {
@@ -69,7 +68,7 @@ export default function Gallery() {
             onConfirm: async () => {
                 await api.deletePhotos(selectedPhotos);
                 setPhotos(photos.filter(p => !selectedPhotos.includes(p.id)));
-                setSelectedPhotos([]);
+                clearSelection();
                 setModalState({...modalState, isOpen: false});
             },
         });
@@ -89,6 +88,7 @@ export default function Gallery() {
     };
 
     const handleNavigateViewer = (direction) => {
+        if (!viewerPhoto) return;
         const currentIndex = filteredPhotos.findIndex(p => p.id === viewerPhoto.id);
         let nextIndex;
         if (direction === 'next') {
@@ -168,12 +168,8 @@ export default function Gallery() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-4">
-                            <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24"
-                                 fill="currentColor">
-                                <path
-                                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"/>
-                            </svg>
-                            <h1 className="text-xl font-bold">PhotoManager</h1>
+                            <Camera />
+                            <h1 className="text-xl font-bold">not google photos</h1>
                         </div>
                         <SearchBar/>
                         <div className="flex items-center space-x-3">

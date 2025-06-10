@@ -33,7 +33,7 @@ const api = {
         return newPhoto;
     },
     deletePhotos: async (photoIds) => {
-        console.log(`API: Deleting photos with IDs: ${photoIds.join(', ')}...`);
+        console.log(`API: Deleting photos with IDs: ${photoIds.join(', ')}`);
         await new Promise(resolve => setTimeout(resolve, 800));
         console.log("API: Deletion complete.");
         return true;

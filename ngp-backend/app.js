@@ -8,6 +8,15 @@ const deleteRoute = require('./routes/delete');
 const viewRoute = require('./routes/view');
 
 const app = express();
+
+// Database setup
+const Knex = require("knex");
+const {development} = require('./knexfile');
+
+const knex = Knex(development);
+const {Model} = require("objection");
+Model.knex(knex);
+
 app.use(cors());
 
 app.use('/upload', uploadRoute);
