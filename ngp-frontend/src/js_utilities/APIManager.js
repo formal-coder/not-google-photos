@@ -20,30 +20,51 @@ const initialPhotos = [
 const api = {
     listPhotos: async () => {
         const response = await axios.get(localEndpoint + API.LIST_PHOTOS);
-        console.log("API: Fetching photo list...", response.data);
         if (response.data.status === 'success') {
-            return response.data.photos;
+            const photos = response.data.photos.map((photo) => ({
+                ...photo,
+                url: localEndpoint + API.VIEW_PHOTO + photo.filename,
+                thumbnail_url: localEndpoint + API.VIEW_THUMBNAIL + photo.filename,
+            }));
+            console.log('API: Photo list fetched successfully.', photos);
+            return photos;
         }
         return initialPhotos;
     },
-    uploadPhoto: async (file) => {
-        console.log(`API: Uploading ${file.name}...`);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        const newPhoto = {
-            id: Date.now(),
-            url: URL.createObjectURL(file),
-            name: file.name,
-            date: new Date().toISOString().split('T')[0],
-            size: `${(file.size / 1024 / 1024).toFixed(1)}MB`,
-        };
-        console.log("API: Upload complete.");
-        return newPhoto;
+    uploadPhotos: async (files) => {
+        const formData = new FormData();
+        files.forEach(file => {
+            formData.append('photos', file);
+        });
+        console.log(`API: Uploading ${files.length} photos...`);
+        const response = await axios.post(localEndpoint + API.UPLOAD_PHOTOS, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log('response', response);
+        if (response.data.success) {
+            const newPhoto = response.data.photos;
+            console.log("API: Upload complete.", newPhoto);
+            return newPhoto;
+        }
+        return false;
     },
     deletePhotos: async (photoIds) => {
-        console.log(`API: Deleting photos with IDs: ${photoIds.join(', ')}`);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        console.log("API: Deletion complete.");
-        return true;
+        console.log(`API: Deleting photos with IDs: ${photoIds.join(', ')}...`);
+        const response = await axios.delete(localEndpoint + API.DELETE_PHOTOS, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: {
+                photoIds: photoIds,
+            },
+        });
+        if (response.data.success) {
+            console.log("API: Deletion complete.");
+            return true;
+        }
+        return false;
     },
 };
 

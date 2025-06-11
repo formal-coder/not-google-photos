@@ -28,8 +28,7 @@ export default function UploadModal ({ isOpen, onClose, onUploadComplete }) {
     const handleUpload = async () => {
         if (files.length === 0) return;
         setIsUploading(true);
-        const uploadPromises = files.map(file => api.uploadPhoto(file));
-        const newPhotos = await Promise.all(uploadPromises);
+        const newPhotos = await api.uploadPhotos(files);
         onUploadComplete(newPhotos);
         setIsUploading(false);
         setFiles([]);

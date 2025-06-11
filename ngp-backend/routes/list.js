@@ -5,7 +5,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
     // TODO: Use createReturnArray from helper.js
     Photo.query()
-        .select('id', 'url', 'updated_at', 'thumbnail_url', 'description')
+        .select('id', 'updated_at', 'filename', 'description', 'size')
         .orderBy('updated_at', 'desc')
         .then(photos => {
             res.json({ status: 'success', photos });

@@ -43,7 +43,7 @@ export default function PhotoViewer ({ photo, onClose, onNavigate }) {
                 {showInfo && (
                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white p-4 rounded-lg text-sm w-auto max-w-sm">
                         <p><strong>Name:</strong> {photo.description}</p>
-                        <p><strong>Date:</strong> {photo.date}</p>
+                        <p><strong>Date:</strong> {photo.updated_at}</p>
                         <p><strong>Size:</strong> {photo.size}</p>
                     </div>
                 )}

@@ -31,10 +31,9 @@ router.post('/', upload.array('photos', 10), async (req, res) => {
             const filename = file.filename;
             const size = file.size;
             const type = file.mimetype;
-            const url = `/uploads/${filename}`;
-            const thumbnail_url = `/uploads/thumbs/${filename}`;
+            const description = file.originalname; // original filename
 
-            const photoData = { url, description: filename, size, type, thumbnail_url };
+            const photoData = { description, filename, size, type };
 
             const insertedPhoto = await Photo.query(trx).insert(photoData);
             await createThumbnail(filename);

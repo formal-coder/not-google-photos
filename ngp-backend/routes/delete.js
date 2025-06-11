@@ -8,25 +8,29 @@ const uploadDir = path.join(__dirname, '../uploads');
 const thumbsDir = path.join(uploadDir, 'thumbs');
 
 router.delete('/', async (req, res) => {
-    const { filenames } = req.body;
+    const { photoIds } = req.body;
+    console.log('Received photo IDs for deletion:', photoIds);
 
-    if (!Array.isArray(filenames) || filenames.length === 0) {
+    if (!Array.isArray(photoIds) || photoIds.length === 0) {
         return res.status(400).json({ status: 'error', message: 'No filenames provided.' });
     }
     // TODO: USE createReturnArray from helper.js
     try {
         const failedDeletes = [];
 
-        for (const filename of filenames) {
-            const filePath = path.join(uploadDir, filename);
-            const thumbnailPath = path.join(thumbsDir, filename);
+        // get photo names from ids and delete entries
+        const photosToBeDeleted = await Photo.query().whereIn('id', photoIds).select('filename');
+
+        for (const photo of photosToBeDeleted) {
+            const filePath = path.join(uploadDir, photo.filename);
+            const thumbnailPath = path.join(thumbsDir, photo.filename);
 
             try {
                 // Delete original file
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 } else {
-                    failedDeletes.push(filename);
+                    failedDeletes.push(photo);
                 }
 
                 // Delete thumbnail if it exists
@@ -34,13 +38,13 @@ router.delete('/', async (req, res) => {
                     fs.unlinkSync(thumbnailPath);
                 }
             } catch (err) {
-                console.error(`Error deleting file: ${filename}`, err);
-                failedDeletes.push(filename);
+                console.error(`Error deleting file: ${photo}`, err);
+                failedDeletes.push(photo);
             }
         }
 
         // Remove entries from the database
-        await Photo.query().delete().whereIn('url', filenames.map(f => `/uploads/${f}`));
+        await Photo.query().delete().whereIn('id', photoIds);
 
         if (failedDeletes.length > 0) {
             return res.status(500).json({

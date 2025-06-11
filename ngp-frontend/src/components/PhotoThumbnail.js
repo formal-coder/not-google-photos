@@ -6,7 +6,7 @@ export default function PhotoThumbnail ({ photo, isSelected, onSelect, onView })
     return (
         <div className="relative group cursor-pointer" onClick={() => onView(photo)}>
             <img
-                src={photo.url}
+                src={photo.thumbnail_url}
                 alt={photo.name}
                 loading="lazy"
                 className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"

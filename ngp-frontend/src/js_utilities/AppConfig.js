@@ -1,7 +1,9 @@
 const API = {
-    "LIST_PHOTOS": "/list",
-    "UPLOAD_PHOTOS": "/upload",
-    "DELETE_PHOTOS": "/delete"
+    "LIST_PHOTOS": "/list/",
+    "UPLOAD_PHOTOS": "/upload/",
+    "DELETE_PHOTOS": "/delete/",
+    "VIEW_PHOTO": "/view/",
+    "VIEW_THUMBNAIL": "/thumbnail/"
 }
 
 export {API};
