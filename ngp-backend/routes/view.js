@@ -6,6 +6,7 @@ const uploadDir = path.join(__dirname, '../uploads');
 
 router.get('/:filename', (req, res) => {
     const filePath = path.join(uploadDir, req.params.filename);
+    // TODO: USE createReturnArray from helper.js
     res.sendFile(filePath);
 });
 

@@ -76,7 +76,7 @@ export default function Gallery() {
 
     const filteredPhotos = useMemo(() =>
         photos.filter(photo =>
-            photo.name.toLowerCase().includes(searchQuery.toLowerCase())
+            photo.description.toLowerCase().includes(searchQuery.toLowerCase())
         ), [photos, searchQuery]);
 
     const handleViewPhoto = (photo) => {

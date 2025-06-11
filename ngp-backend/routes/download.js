@@ -1,21 +1,18 @@
 const express = require('express');
-const path = require('path');
-const router = express.Router();
+    const path = require('path');
+    const fs = require('fs');
 
-const uploadDir = path.join(__dirname, '../uploads');
+    const router = express.Router();
+    const uploadDir = path.join(__dirname, '../uploads');
 
-router.get('/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(uploadDir, filename);
-    const Photo = require('../models/Photos');
+    router.get('/:filename', (req, res) => {
+        const filePath = path.join(uploadDir, req.params.filename);
+        // TODO: Use createReturnArray from helper.js
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).send('File not found');
+        }
 
-    // Check if the file exists
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).send('File not found');
-    }
+        res.sendFile(filePath);
+    });
 
-    // Send the file to the client
-    res.sendFile(filePath);
-});
-
-module.exports = router;
+    module.exports = router;

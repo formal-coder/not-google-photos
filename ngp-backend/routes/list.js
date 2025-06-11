@@ -1,11 +1,19 @@
 const express = require('express');
-const { loadMetadata } = require('../utils/metadata');
-
+const Photo = require('../models/Photos');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    const metadata = loadMetadata();
-    res.json(metadata.files);
+    // TODO: Use createReturnArray from helper.js
+    Photo.query()
+        .select('id', 'url', 'updated_at', 'thumbnail_url', 'description')
+        .orderBy('updated_at', 'desc')
+        .then(photos => {
+            res.json({ status: 'success', photos });
+        })
+        .catch(err => {
+            console.error('Error fetching photos:', err);
+            res.status(500).json({ status: 'error', message: 'Failed to fetch photos.' });
+        });
 });
 
 module.exports = router;

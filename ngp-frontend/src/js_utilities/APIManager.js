@@ -1,3 +1,8 @@
+import axios from "axios";
+import {API} from './AppConfig';
+
+const localEndpoint = 'http://localhost:3000';
+
 // --- Mock Data & API Simulation ---
 // In a real application, you would fetch this data from your backend.
 const initialPhotos = [
@@ -14,9 +19,11 @@ const initialPhotos = [
 // This simulates API calls to your backend endpoints
 const api = {
     listPhotos: async () => {
-        console.log("API: Fetching photo list...");
-        await new Promise(resolve => setTimeout(resolve, 500));
-        console.log("API: Photo list fetched.");
+        const response = await axios.get(localEndpoint + API.LIST_PHOTOS);
+        console.log("API: Fetching photo list...", response.data);
+        if (response.data.status === 'success') {
+            return response.data.photos;
+        }
         return initialPhotos;
     },
     uploadPhoto: async (file) => {

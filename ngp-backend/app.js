@@ -17,8 +17,8 @@ const knex = Knex(development);
 const {Model} = require("objection");
 Model.knex(knex);
 
+app.use(express.json());
 app.use(cors());
-
 app.use('/upload', uploadRoute);
 app.use('/list', listRoute);
 app.use('/download', downloadRoute);

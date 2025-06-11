@@ -2,21 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
 const { createThumbnail } = require('../utils/thumbnail');
 const Photo = require('../models/Photos');
 const router = express.Router();
+const { generateSafeFilename, createReturnArray} = require('../utils/helper');
 
 const uploadDir = path.join(__dirname, '../uploads');
-const thumbsDir = path.join(uploadDir, 'thumbs');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-if (!fs.existsSync(thumbsDir)) fs.mkdirSync(thumbsDir);
-
-const generateSafeFilename = (originalName) => {
-    const ext = path.extname(originalName);
-    const base = crypto.randomBytes(8).toString('hex');
-    return `${base}${ext}`;
-};
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
@@ -24,28 +16,45 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/', upload.single('photo'), async (req, res) => {
-    if (!req.file) return res.status(400).send('No file uploaded');
+router.post('/', upload.array('photos', 10), async (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).send('No files uploaded');
+    }
 
-    const filename = req.file.filename;
-    const size = req.file.size;
-    const type = req.file.mimetype;
-    const url = `/uploads/${filename}`;
-    const thumbnail_url = `/uploads/thumbs/${filename}`;
-
-    const photoData = { url, description: filename, size, type, thumbnail_url };
+    const response = createReturnArray;
 
     const trx = await Photo.startTransaction();
     try {
-        const insertedPhoto = await Photo.query(trx).insert(photoData);
-        await createThumbnail(filename);
+        const uploadedPhotos = [];
+
+        for (const file of req.files) {
+            const filename = file.filename;
+            const size = file.size;
+            const type = file.mimetype;
+            const url = `/uploads/${filename}`;
+            const thumbnail_url = `/uploads/thumbs/${filename}`;
+
+            const photoData = { url, description: filename, size, type, thumbnail_url };
+
+            const insertedPhoto = await Photo.query(trx).insert(photoData);
+            await createThumbnail(filename);
+            uploadedPhotos.push(insertedPhoto);
+        }
+
         await trx.commit();
-        res.json({ message: 'Upload successful', photo: insertedPhoto });
+
+        response.photos = uploadedPhotos;
+        res.json(response);
     } catch (err) {
         await trx.rollback();
-        fs.unlinkSync(req.file.path);
-        console.error('Upload error:', err);
-        res.status(500).send('Upload failed');
+        for (const file of req.files) {
+            fs.unlinkSync(file.path);
+        }
+        response.success = false;
+        response.status = 500;
+        response.error = err.message;
+        response.message = 'Failed to upload photos';
+        res.status(500).json(response);
     }
 });
 
