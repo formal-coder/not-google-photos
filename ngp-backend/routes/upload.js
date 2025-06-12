@@ -21,9 +21,17 @@ router.post('/', upload.array('photos', 10), async (req, res) => {
         return res.status(400).send('No files uploaded');
     }
 
-    const response = createReturnArray;
+    if (!req.files.every(file => file.mimetype.startsWith('image/'))) {
+        return res.status(400).send('Only image files are allowed');
+    }
+    if (req.files.length > 10) {
+        return res.status(400).send('You can upload a maximum of 10 files at a time');
+    }
 
+    const response = createReturnArray;
+    const failedUploads = [];
     const trx = await Photo.startTransaction();
+
     try {
         const uploadedPhotos = [];
 
@@ -31,18 +39,37 @@ router.post('/', upload.array('photos', 10), async (req, res) => {
             const filename = file.filename;
             const size = file.size;
             const type = file.mimetype;
-            const description = file.originalname; // original filename
+            const description = file.originalname;
 
-            const photoData = { description, filename, size, type };
+            // Limit the upload image size to 5MB
+            if (size > 5 * 1024 * 1024) {
+                failedUploads.push({
+                    description,
+                    error: `File exceeds 5MB limit`
+                });
+                fs.unlinkSync(file.path); // Delete the uploaded file
+                continue; // Skip to the next file
+            }
 
-            const insertedPhoto = await Photo.query(trx).insert(photoData);
-            await createThumbnail(filename);
-            uploadedPhotos.push(insertedPhoto);
+            try {
+                const photoData = { description, filename, size, type };
+                const insertedPhoto = await Photo.query(trx).insert(photoData);
+                await createThumbnail(filename);
+                uploadedPhotos.push(insertedPhoto);
+            } catch (err) {
+                failedUploads.push({
+                    description,
+                    error: err.message
+                });
+                fs.unlinkSync(file.path); // Delete the uploaded file
+            }
         }
 
         await trx.commit();
 
+        response.success = true;
         response.photos = uploadedPhotos;
+        response.failedUploads = failedUploads;
         res.json(response);
     } catch (err) {
         await trx.rollback();
@@ -52,6 +79,7 @@ router.post('/', upload.array('photos', 10), async (req, res) => {
         response.success = false;
         response.status = 500;
         response.error = err.message;
+        response.failedUploads = failedUploads;
         response.message = 'Failed to upload photos';
         res.status(500).json(response);
     }

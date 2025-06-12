@@ -10,7 +10,8 @@ import {Plus, Trash2, Sun, Moon, Search, Camera} from 'lucide-react';
 // --- App Component ---
 
 export default function Gallery() {
-    const [theme, setTheme] = useState('light');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const [theme, setTheme] = useState(prefersDark ? 'dark' : 'light');
     const [photos, setPhotos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploadOpen, setIsUploadOpen] = useState(false);

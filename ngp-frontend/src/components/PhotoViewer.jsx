@@ -24,7 +24,30 @@ export default function PhotoViewer ({ photo, onClose, onNavigate }) {
                     <button onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }} className="text-white/80 hover:text-white transition-colors"><Info size={24} /></button>
                 </Tooltip>
                 <Tooltip text="Download">
-                    <a href={photo.url} download={photo.description} onClick={(e) => e.stopPropagation()} className="text-white/80 hover:text-white transition-colors"><Download size={24} /></a>
+                    {/*Download the file directly*/}
+                    <a href={photo.url}
+                       download={photo.description || "download"}
+                       onClick={async (e) => {
+                           e.stopPropagation();
+                           e.preventDefault();
+                           try {
+                               const response = await fetch(photo.url);
+                               if (!response.ok) throw new Error('Failed to fetch file');
+                               const blob = await response.blob();
+                               const blobUrl = URL.createObjectURL(blob);
+                               const link = document.createElement('a');
+                               link.href = blobUrl;
+                               link.download = photo.description || 'download';
+                               link.click();
+                               URL.revokeObjectURL(blobUrl); // Clean up the blob URL
+                           } catch (error) {
+                               console.error('Error downloading file:', error);
+                           }
+                       }}
+                       className="text-white/80 hover:text-white transition-colors"
+                    >
+                        <Download size={24} />
+                    </a>
                 </Tooltip>
                 <Tooltip text="Close (Esc)">
                     <button onClick={onClose} className="text-white/80 hover:text-white transition-colors"><X size={30} /></button>
