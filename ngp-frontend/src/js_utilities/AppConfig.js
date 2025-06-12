@@ -4,7 +4,8 @@ const API = {
     "DELETE_PHOTOS": "/delete/",
     "VIEW_PHOTO": "/view/",
     "VIEW_THUMBNAIL": "/thumbnail/",
-    "DOWNLOAD_PHOTOS": "/download/"
+    "DOWNLOAD_PHOTOS": "/download/",
+    "PRE_FLIGHT_CHECK": "/preflightCheck/",
 }
 
 export {API};

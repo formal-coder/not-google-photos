@@ -1,38 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, {useState, useEffect } from 'react';
 import PhotoThumbnail from './PhotoThumbnail';
 import PhotoViewer from './PhotoViewer';
 import UploadModal from './UploadModal';
 import ConfirmationModal from './ConfirmationModal';
-import Tooltip from './Tooltip';
 import { api } from '../js_utilities/APIManager';
-import {Plus, Trash2, Sun, Moon, Search, Camera} from 'lucide-react';
+import {Trash2} from 'lucide-react';
 
 // --- App Component ---
 
-export default function Gallery() {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const [theme, setTheme] = useState(prefersDark ? 'dark' : 'light');
+export default function Gallery({ isUploadOpen, setIsUploadOpen }) {
     const [photos, setPhotos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isUploadOpen, setIsUploadOpen] = useState(false);
 
     const [selectedPhotos, setSelectedPhotos] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-
     const [viewerPhoto, setViewerPhoto] = useState(null);
 
     const [modalState, setModalState] = useState({
         isOpen: false, onConfirm: () => {
         }, title: '', message: ''
     });
-
-    useEffect(() => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [theme]);
 
     useEffect(() => {
         const fetchPhotos = async () => {
@@ -43,10 +29,6 @@ export default function Gallery() {
         };
         fetchPhotos();
     }, []);
-
-    const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
-    };
 
     const handleUploadComplete = (newPhotos) => {
         setPhotos(prevPhotos => [...newPhotos, ...prevPhotos]);
@@ -75,11 +57,6 @@ export default function Gallery() {
         });
     };
 
-    const filteredPhotos = useMemo(() =>
-        photos.filter(photo =>
-            photo.description.toLowerCase().includes(searchQuery.toLowerCase())
-        ), [photos, searchQuery]);
-
     const handleViewPhoto = (photo) => {
         setViewerPhoto(photo);
     };
@@ -90,51 +67,15 @@ export default function Gallery() {
 
     const handleNavigateViewer = (direction) => {
         if (!viewerPhoto) return;
-        const currentIndex = filteredPhotos.findIndex(p => p.id === viewerPhoto.id);
+        const currentIndex = photos.findIndex(p => p.id === viewerPhoto.id);
         let nextIndex;
         if (direction === 'next') {
-            nextIndex = (currentIndex + 1) % filteredPhotos.length;
+            nextIndex = (currentIndex + 1) % photos.length;
         } else {
-            nextIndex = (currentIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
+            nextIndex = (currentIndex - 1 + photos.length) % photos.length;
         }
-        setViewerPhoto(filteredPhotos[nextIndex]);
+        setViewerPhoto(photos[nextIndex]);
     };
-
-    const SearchBar = () => (
-        <div className="flex-1 max-w-xs ml-8 hidden md:block">
-            <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Search className="h-5 w-5 text-gray-400"/>
-                  </span>
-                <input
-                    type="search"
-                    placeholder="Search photos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border bg-gray-100 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-            </div>
-        </div>
-    );
-
-    const ThemeToggle = () => (
-        <Tooltip text={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
-            <button onClick={toggleTheme}
-                    className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                {theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}
-            </button>
-        </Tooltip>
-    );
-
-    const UploadButton = () => (
-        <Tooltip text="Upload Photo">
-            <button onClick={() => setIsUploadOpen(true)}
-                    className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105">
-                <Plus size={20}/>
-                <span className="hidden sm:inline">Upload</span>
-            </button>
-        </Tooltip>
-    )
 
     const SelectionActionBar = () => {
         return (
@@ -162,25 +103,7 @@ export default function Gallery() {
     };
 
     return (
-        <div
-            className="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200 transition-colors duration-300 font-sans">
-            <header
-                className="sticky top-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 z-30">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center space-x-4">
-                            <Camera />
-                            <h1 className="text-xl font-bold">not google photos</h1>
-                        </div>
-                        <SearchBar/>
-                        <div className="flex items-center space-x-3">
-                            <UploadButton />
-                            <ThemeToggle />
-                        </div>
-                    </div>
-                </div>
-            </header>
-
+        <>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 {isLoading ? (
                     <div className="text-center py-20">
@@ -193,9 +116,9 @@ export default function Gallery() {
                         </svg>
                         <p className="mt-4 text-lg font-semibold">Loading your moments...</p>
                     </div>
-                ) : filteredPhotos.length > 0 ? (
+                ) : photos?.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {filteredPhotos.map(photo => (
+                        {photos.map(photo => (
                             <PhotoThumbnail
                                 key={photo.id}
                                 photo={photo}
@@ -209,7 +132,7 @@ export default function Gallery() {
                     <div className="text-center py-20">
                         <h2 className="text-2xl font-semibold mb-2">No photos found</h2>
                         <p className="text-gray-500 dark:text-gray-400">
-                            {searchQuery ? `Your search for "${searchQuery}" did not return any results.` : "Your gallery is empty. Upload your first photo!"}
+                            {"Your gallery is empty. Upload your first photo!"}
                         </p>
                     </div>
                 )}
@@ -227,6 +150,6 @@ export default function Gallery() {
                 title={modalState.title}
                 message={modalState.message}
             />
-        </div>
+        </>
     );
 }
